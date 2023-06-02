@@ -125,4 +125,12 @@ def parse_arguments():
         help="The specific engine to run against. Only applicable to Dremio Cloud.",
         required=False,
     )
+    parser.add_argument(
+        "-pid",
+        "--project-id",
+        dest="project_id",
+        type=str,
+        help="The Dremio Project Id (UUID) to use for the connection.",
+        required=False
+    )
     return parser.parse_args()

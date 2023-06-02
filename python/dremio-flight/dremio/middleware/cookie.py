@@ -46,6 +46,7 @@ class CookieMiddleware(flight.ClientMiddleware):
             if key.lower() == "set-cookie":
                 cookie = SimpleCookie()
                 for item in headers.get(key):
+                    print(f"Loading Cookie '{item}'")
                     cookie.load(item)
 
                 self.factory.cookies.update(cookie.items())

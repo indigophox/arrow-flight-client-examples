@@ -15,6 +15,7 @@
 """
 import logging
 from argparse import Namespace
+from http.cookies import SimpleCookie
 from pyarrow import flight
 from dremio.middleware.auth import DremioClientAuthMiddlewareFactory
 from dremio.middleware.cookie import CookieMiddlewareFactory
@@ -37,6 +38,7 @@ class DremioFlightEndpointConnection:
         self.path_to_certs = connection_args.path_to_certs
         self.session_properties = connection_args.session_properties
         self.engine = connection_args.engine
+        self.project_id = connection_args.project_id
         self._set_headers()
 
     def connect(self) -> flight.FlightClient:
@@ -51,6 +53,12 @@ class DremioFlightEndpointConnection:
             if self.tls:
                 tls_args = self._set_tls_connection_args()
                 scheme = "grpc+tls"
+
+            if self.project_id:
+                project_id_cookie = SimpleCookie()
+                project_id_cookie.load(f'project_id={self.project_id}')
+                print(f'Injecting cookie(s): {str(project_id_cookie)}')
+                client_cookie_middleware.cookies.update(project_id_cookie.items())
 
             if self.token:
                 return self._connect_with_pat(
