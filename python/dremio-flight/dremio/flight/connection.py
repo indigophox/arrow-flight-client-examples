@@ -47,6 +47,9 @@ class DremioFlightEndpointConnection:
         try:
             # Default to use an unencrypted TCP connection.
             scheme = "grpc+tcp"
+            '''
+            Client cookie middleware, usually used a a black box.
+            '''
             client_cookie_middleware = CookieMiddlewareFactory()
             tls_args = {}
 
@@ -55,11 +58,28 @@ class DremioFlightEndpointConnection:
                 scheme = "grpc+tls"
 
             if self.project_id:
-                project_id_cookie = SimpleCookie()
-                project_id_cookie.load(f'project_id={self.project_id}')
-                print(f'Injecting cookie(s): {str(project_id_cookie)}')
+                cookie = SimpleCookie()
+                '''
+                Load "project_id=<project-uuid>" into the Cookie container.
+                Note we're no longer using it as a black box, and the client
+                is making up its own cookie which is less than conformant
+                to RFC 6265.  This should ideally not be used in production
+                systems.
+                '''
+                cookie['project_id'] = self.project_id
+                print(f'Injecting cookie(s): "{str(cookie)}"')
+                '''
+                Update the middleware's cookie jar dict, normally intended to be
+                internal-only.
+                '''
                 client_cookie_middleware.cookies.update(project_id_cookie.items())
 
+            '''
+            Middleware in injected into the Flight client per either of the below.
+            (See downstream call paths in this package, or the official documentation:
+            https://arrow.apache.org/docs/python/generated/pyarrow.flight.connect.html#pyarrow.flight.connect
+            )
+            '''
             if self.token:
                 return self._connect_with_pat(
                     tls_args, client_cookie_middleware, scheme
