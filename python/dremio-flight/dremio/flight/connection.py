@@ -72,10 +72,10 @@ class DremioFlightEndpointConnection:
                 Update the middleware's cookie jar dict, normally intended to be
                 internal-only.
                 '''
-                client_cookie_middleware.cookies.update(project_id_cookie.items())
+                client_cookie_middleware.cookies.update(cookie.items())
 
             '''
-            Middleware in injected into the Flight client per either of the below.
+            Middleware is injected into the Flight client per either of the below.
             (See downstream call paths in this package, or the official documentation:
             https://arrow.apache.org/docs/python/generated/pyarrow.flight.connect.html#pyarrow.flight.connect
             )
